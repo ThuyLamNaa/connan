@@ -1,0 +1,228 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+.main_content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 20px; 
+    background-color: #e9e7e7;
+}
+.product_content {
+    width: 80%;
+    max-width: 1200px;
+    display: flex;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+}
+
+/* Product Photo */
+.product_photo {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.product_photo img {
+    width: 100%;
+    max-width: 350px;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* Product Info */
+.product_info {
+    width: 60%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 0 10px;
+}
+
+/* Product Name */
+.product_name {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Product Price */
+.product_price {
+    font-size: 24px;
+    font-weight: bold;
+    color: red;
+    margin: 10px 0;
+}
+
+/* Creation Time */
+.create_time {
+    font-size: 15px;
+    color: gray;
+    margin-bottom: 8px;
+}
+
+/* Quantity Selector */
+.product-detail-quantity {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.product-detail-label-lb {
+    width: 110px;
+    font-size: 14px;
+    color: #767676;
+}
+
+/* Quantity Input Field */
+.product-detail-quantity-input {
+    width: 46px;
+    height: 30px;
+    border: 1px solid #e8e8e8;
+    text-align: center;
+    outline: none;
+}
+
+/* Add to Cart & Edit Buttons */
+.product_addtocart {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product_addtocart .btn_addtocart,
+.product_addtocart .btn_buy {
+    width: 45%;
+    height: 45px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.product_addtocart .btn_addtocart {
+    border: 1px solid orange;
+    background-color: orange;
+    color: white;
+    font-size: 16px;
+}
+.product_addtocart .btn_addtocart:hover {
+    border: 1px solid orangered;
+    background-color: orangered;
+    color: white;
+    font-size: 16px;   
+}
+
+.product_addtocart .btn_buy {
+    border: 1px solid limegreen;
+    background-color: limegreen;
+    color: white;
+    font-size: 16px;
+}
+.product_addtocart .btn_buy:hover{
+    border: 1px solid lime;
+    background-color: lime;
+    color: white;
+    font-size: 16px;
+}
+
+
+.product_addtocart a {
+    text-decoration: none;
+    color: inherit;
+}
+/* Thông tin chi tiết của sản phẩm */
+.main_content .product_infomation {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.product_infomation .description,
+.product_infomation .other_infomation {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product_infomation .description .title,
+.product_infomation .other_infomation .title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.product_infomation .description span,
+.product_infomation .other_infomation span {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+}
+
+.product_infomation .other_infomation table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.product_infomation .other_infomation table th,
+.product_infomation .other_infomation table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.product_infomation .other_infomation table th {
+    background-color: #f8f8f8;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.product_infomation .other_infomation table td {
+    font-size: 14px;
+    color: #666;
+}
+
+.product_infomation .other_infomation .table_title {
+    width: 200px;
+    font-weight: bold;
+    background-color: #f1f1f1;
+    padding: 12px;
+    text-align: left;
+    color: #333;
+}
+
+/* Cải thiện giao diện cho phần mô tả */
+.product_infomation .description span {
+    font-size: 15px;
+    color: #777;
+    text-align: justify;
+    line-height: 1.8;
+}
+
+.product_infomation > div {
+    margin-bottom: 20px;
+}

@@ -1,0 +1,80 @@
+.table_account {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.table_account table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table_account th,
+.table_account td {
+    padding: 10px;
+    text-align: left;
+    font-size: 15px;
+    border-bottom: 1px solid #ddd;
+}
+
+.table_account th {
+    background-color: white;
+    color: orangered;
+    font-weight: bold;
+    border: 1px solid orangered;
+}
+
+
+
+.table_account tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.table_account button {
+    padding: 6px 10px;
+    margin: 0 2px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    cursor: pointer;
+}
+
+.table_account button:first-child {
+    background-color: #4CAF50;
+}
+
+.table_account button:last-child {
+    background-color: #f44336;
+}
+
+.button_create_account {
+    width: 100%;
+    height: 30px;
+    margin: 10px;
+    display: flex;
+    align-items: center;
+}
+.button_create_account a {
+    text-decoration: none;
+    width: 200px;
+    height: 30px;
+    border: 1px solid orange;
+    background-color: orange;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+}
+
+.button_create_account:hover a {
+    background-color: orangered;
+    color: black;
+}
+

@@ -1,0 +1,147 @@
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.main_content {
+    width: 80%;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid black;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px;
+}
+
+.content {
+    width: 100%;
+    padding: 10px;
+}
+
+.content_item {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.content_item_title {
+    width: 100%;
+    font-size: 16px;
+    font-weight: bold;
+    color: limegreen;
+}
+
+.content_item_text {
+    width: 100%;
+    display: flex;
+    margin-top: 20px;
+}
+
+.vision {
+    width: 50%;
+    border-right: 1px solid limegreen;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: justify;
+    padding: 10px;
+}
+
+.mission {
+    width: 50%;
+    border-left: 1px solid limegreen;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: justify;
+}
+
+.vision_title,
+.mission_title {
+    font-size: 15px;
+    color: green;
+    font-weight: bold;
+}
+
+.vision_content,
+.mission_content {
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.trust,
+.friendly,
+.sustainable {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+    width: 33.33%;
+}
+
+.trust img,
+.friendly img,
+.sustainable img {
+    width: 120px;
+    height: 120px;
+    border-radius: 5px;
+    object-fit: cover;
+}
+
+.trust .trust_text {
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(45deg, #007FFF, #00CFFF);
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 2px 2px 8px rgba(0, 127, 255, 0.3);
+    letter-spacing: 3px;
+}
+
+.friendly .friendly_text {
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Arial', sans-serif;
+  background: linear-gradient(45deg, #808080, #B0B0B0);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'Arial', sans-serif;
+  letter-spacing: 2px;
+}
+.sustainable .sustainable_text {
+    font-size: 24px;
+  font-weight: bold;
+  color: #239B56;
+  background: linear-gradient(45deg, #239B56, #A9DFBF);
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  font-family: 'Arial', sans-serif;
+  letter-spacing: 1.5px;
+}
+
+.introduction {
+    width: 100%;
+    padding: 20px 50px;
+    align-items: center;
+    justify-content: center;
+}
