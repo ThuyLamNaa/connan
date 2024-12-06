@@ -141,7 +141,7 @@
     margin-top: 20px;
 }
 
-.shop_infodetail  {
+.shop_infodetail {
     width: 100%;
     display: flex;
     justify-content: space-between;
@@ -152,6 +152,7 @@
     background-color: #f9f9f9;
     text-decoration: none;
 }
+
 .shop_infodetail a {
     width: 100%;
     display: flex;
@@ -272,7 +273,7 @@
 }
 
 /* Đặt các phần cách nhau hợp lý */
-.product_infomation > div {
+.product_infomation>div {
     margin-bottom: 20px;
 }
 
@@ -301,3 +302,121 @@
         width: auto;
     }
 }
+
+.rating_product {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.rating_product .rating {
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Đặt nền và căn chỉnh cơ bản */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.product-reviews {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.product-reviews h2 {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    color: orange;
+}
+
+/* Form đánh giá */
+form {
+    margin-bottom: 30px;
+}
+
+form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+form select, form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid orange;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+form button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    color: #fff;
+    background: linear-gradient(90deg, orange, orange);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+form button:hover {
+    background: linear-gradient(90deg, orangered, orangered);
+}
+
+/* Danh sách đánh giá */
+.reviews-list {
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.review-item {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.review-item h4 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #4CAF50;
+}
+
+.review-item p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666;
+}
+
+/* Link đăng nhập */
+a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+html {
+    font-family: Arial, Helvetica, sans-serif; 
+ }
+
+
+  

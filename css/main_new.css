@@ -464,3 +464,7 @@ html {
 .btn_search:hover {
     background-color: orangered;
 }
+
+html {
+    font-family: Arial, Helvetica, sans-serif; 
+ }

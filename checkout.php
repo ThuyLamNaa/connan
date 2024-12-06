@@ -3,77 +3,69 @@ include './config.php';
 session_start();
 error_reporting(E_ALL & ~E_NOTICE);
 
-// Kiểm tra xem người dùng đã đăng nhập chưa
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ./login/login.php');
-    exit();
+    header('Location: login.php');
+    exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];  // Lấy user_id của người dùng
 
-// Lấy giỏ hàng của người dùng
-$sql = "SELECT cart.product_id, cart.quantity, products.product_name, products.price, products.seller_id 
-        FROM cart 
-        JOIN products ON cart.product_id = products.product_id 
-        WHERE cart.user_id = '$user_id'";
-$query = mysqli_query($conn, $sql);
-
-$sql1 = "SELECT cart.product_id, cart.quantity, products.product_name, products.price, products.seller_id 
-        FROM cart 
-        JOIN products ON cart.product_id = products.product_id 
-        WHERE cart.user_id = '$user_id'";
-$query1 = mysqli_query($conn, $sql1);
-
-$total1 = 0;
-$subtotal1 = 0;
-while ($row1 = mysqli_fetch_array($query1)) {
-    $subtotal1 = $row1['quantity'] * $row1['price'];
-    $total1 += $subtotal1;
-}
-
-$total = 0;
-
-
-
-// Xử lý thanh toán nếu form đã được gửi
 if (isset($_POST['submit'])) {
     // Nhận thông tin từ biểu mẫu
-    $full_name = $_POST['full_name'];
-    $phone = $_POST['phone_number'];
-    $address = $_POST['address'];
-    $city = $_POST['city'];
-    $district = $_POST['district'];
-    $ward = $_POST['ward'];
-    $payment_method = $_POST['payment_method'];
+    $fullname = mysqli_real_escape_string($conn, $_POST['fullname']);
+    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
+    $address = mysqli_real_escape_string($conn, $_POST['address']);
+    $city = mysqli_real_escape_string($conn, $_POST['city']);
+    $district = mysqli_real_escape_string($conn, $_POST['district']);
+    $ward = mysqli_real_escape_string($conn, $_POST['ward']);
+    $payment_method = mysqli_real_escape_string($conn, $_POST['payment_method']);
 
-    // Thông tin thẻ (nếu có)
-    $card_number = $_POST['card_number'] ?? null;
-    $expiration_date = $_POST['expiration_date'] ?? null;
-    $cvv = $_POST['cvv'] ?? null;
+    // Tính tổng giá trị của các sản phẩm trong giỏ hàng
+    $total1 = 0;
+    $cart_sql = "SELECT c.quantity, p.price as p_price FROM cart c JOIN products p ON p.product_id = c.product_id  WHERE user_id = '$user_id' AND selected = 1";
+    $cart_query = mysqli_query($conn, $cart_sql);
+    while ($cart = mysqli_fetch_array($cart_query)) {
+        $total1 += $cart['quantity'] * $cart['p_price'];
+    }
 
     // Thêm thông tin đơn hàng vào cơ sở dữ liệu
-    $order_sql = "INSERT INTO orders (total_amount, full_name, phone_number, city, district, ward, created_time, status, seller_id, purchase_id) 
-                  VALUES ('$total1', '$full_name', '$phone', '$city', '$district', '$ward', '$card_number', 'pending', '$seller_id', '$user_id')";
+// Kiểm tra seller_id có tồn tại trong bảng users không
+    $seller_id = $_GET['seller_id']; // Hoặc giá trị seller_id bạn đang sử dụng
+    $query_check_seller = "SELECT * FROM users WHERE user_id = '$seller_id'";
+    $result = mysqli_query($conn, $query_check_seller);
+
+    if (mysqli_num_rows($result) == 0) {
+        // Seller không tồn tại trong bảng users, trả về lỗi hoặc thông báo
+        echo "Lỗi: Không tìm thấy người bán với ID này.";
+    } else {
+        // Seller tồn tại, tiếp tục với truy vấn INSERT INTO orders
+        $order_sql = "INSERT INTO orders (fullname, phone_number, address, city, district, ward, purchase_id, seller_id, total_amount, status) VALUES ('$fullname', '$phone', '$address', '$city', '$district', '$ward', '$user_id', '$seller_id', '$total1', 'pending')";
+        mysqli_query($conn, $order_sql);
+    }
 
     if (mysqli_query($conn, $order_sql)) {
         // Lấy ID của đơn hàng vừa tạo
         $order_id = mysqli_insert_id($conn);
 
         // Lấy sản phẩm từ giỏ hàng và thêm vào đơn hàng
-        while ($cart = mysqli_fetch_array($query)) {
+        $cart_sql = "SELECT p.product_id, c.quantity, p.price FROM cart c JOIN products p ON p.product_id = c.product_id WHERE user_id = '$user_id' AND selected = 1 ";
+        $cart_query = mysqli_query($conn, $cart_sql);
+
+        while ($cart = mysqli_fetch_array($cart_query)) {
             $product_id = $cart['product_id'];
             $quantity = $cart['quantity'];
             $price = $cart['price'];
 
             // Kiểm tra số lượng sản phẩm có đủ để thêm vào đơn hàng không
-            $product_quantity = mysqli_query($conn, "SELECT quantity FROM products WHERE product_id = '$product_id'");
-            $fetch_product_quantity = mysqli_fetch_assoc($product_quantity);
+            $product_quantity_sql = "SELECT quantity FROM products WHERE product_id = '$product_id'";
+            $product_quantity_query = mysqli_query($conn, $product_quantity_sql);
+            $fetch_product_quantity = mysqli_fetch_assoc($product_quantity_query);
             $available_quantity = $fetch_product_quantity['quantity'];
 
             if ($available_quantity >= $quantity) {
-                // Thêm vào bảng orderdetail
-                $order_detail_sql = "INSERT INTO orderdetail (order_id, product_id, quantity, price) 
-                             VALUES ('$order_id', '$product_id', '$quantity', '$price')";
+                // Thêm vào bảng orderdetails
+                $order_detail_sql = "INSERT INTO orderdetails (order_id, product_id, quantity, price) 
+                                     VALUES ('$order_id', '$product_id', '$quantity', '$price')";
                 mysqli_query($conn, $order_detail_sql);
 
                 // Cập nhật số lượng sản phẩm trong bảng products
@@ -82,13 +74,11 @@ if (isset($_POST['submit'])) {
 
                 // Nếu số lượng sản phẩm bằng 0, xóa sản phẩm khỏi giỏ hàng
                 if ($new_quantity <= 0) {
-                    // Xóa sản phẩm khỏi giỏ hàng
                     mysqli_query($conn, "DELETE FROM cart WHERE product_id = '$product_id' AND user_id = '$user_id'");
                 }
             } else {
                 // Nếu số lượng không đủ, xóa sản phẩm khỏi giỏ hàng
                 mysqli_query($conn, "DELETE FROM cart WHERE product_id = '$product_id' AND user_id = '$user_id'");
-                // Thông báo cho người dùng hoặc xử lý tiếp
                 echo "<script>alert('Sản phẩm $product_id không đủ số lượng và đã được xóa khỏi giỏ hàng.');</script>";
             }
         }
@@ -99,7 +89,8 @@ if (isset($_POST['submit'])) {
 
         // Thông báo người dùng về trạng thái thanh toán
         if ($payment_method === 'cod') {
-            mysqli_query($conn, "insert into transactions (method, created_time, order_id, user_id) values ('cod', '$created_time', '$order_id','$user_id')") or die('query fail');
+            mysqli_query($conn, "INSERT INTO transactions (method, created_time, order_id, user_id, status) 
+                                 VALUES ('cod', NOW(), '$order_id', '$user_id', 'Chưa thanh toán')") or die('query fail');
 
             echo "<script>alert('Đặt hàng thành công'); window.location.href = 'index.php';</script>";
         } else {
@@ -113,321 +104,254 @@ if (isset($_POST['submit'])) {
 }
 ?>
 
+<!-- HTML code remains unchanged -->
+
+
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout</title>
-    <!-- CSS -->
+    <title>Thanh toán</title>
     <link rel="stylesheet" href="./css/main_new.css">
     <link rel="stylesheet" href="./css/header.css">
+
     <!-- Fontawesome css -->
     <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/css/all.min.css">
-    <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/css/brands.min.css">
-    <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/css/fontawesome.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
-        integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
-    <!-- Fontawesome js -->
-    <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/js/all.min.js">
-    <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/js/brands.min.js">
-    <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/js/fontawesome.min.js">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        .main_content {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            flex-direction: column;
-        }
+        <style>
 
-        .content {
-            width: 70%;
-            display: flex;
-            padding: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            gap: 2%;
-        }
-
-        .infor_myself {
-            width: 59%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .infor_myself .title {
-            font-size: 18px;
-        }
-
-
-        .infor_row {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            margin: 10px 0;
-        }
-
-        .infor_row label {
-            font-size: 15px;
-            color: gray;
-        }
-
-        .infor_row input {
-            width: 100%;
-            height: 35px;
-            border: 1px solid yellowgreen;
-            border-radius: 5px;
-            margin-top: 5px;
-            padding: 10px;
-        }
-
-        .infor_payment {
-            width: 39%;
-            padding: 20px;
-            background-color: #f8f8f8;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .infor_detail_payment .title {
-            font-size: 15px;
-            font-weight: bold;
+        /* General page styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
             color: #333;
-            margin-bottom: 20px;
+            margin: 0;
+            padding: 0;
+        }
+
+        h3 {
             text-align: center;
+            color: #444;
+            margin-bottom: 20px;
         }
 
-        .method_payment {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
+        /* Container for main content */
+        .main_content {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
             border-radius: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 1px solid #e0e0e0;
-        }
-
-        .method_payment:hover {
-            border-color: #5a9;
-            background-color: #e8f5e9;
-        }
-
-        .method_payment input[type="radio"] {
-            margin-right: 15px;
-            transform: scale(1.2);
-            accent-color: #5a9;
-        }
-
-        .method_avt {
-            font-size: 24px;
-            margin-right: 15px;
-        }
-
-        .method_name span {
-            font-size: 16px;
-            color: #333;
-        }
-
-        .method_payment img {
-            width: 30px;
-            height: 30px;
-            object-fit: cover;
-        }
-
-        .order_detail {
-            width: 70%;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .cart-table {
-            width: 100%;
-            border-collapse: collapse;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .cart-table th,
-        .cart-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .cart-table th {
-            background-color: #f8f8f8;
+        /* Payment information form */
+        .payment_info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .payment_info label {
+            font-size: 13px;
             font-weight: bold;
-            color: #333;
+            color: #444;
         }
 
-        .cart-table tr:hover {
-            background-color: #f1f1f1;
+        .payment_info input,
+        .payment_info select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
         }
 
-        .total-row td {
+        .payment_info input:focus,
+        .payment_info select:focus {
+            outline-color: #007BFF;
+        }
+
+        /* Checkout products section */
+        .checkout_products {
+            margin-top: 20px;
+        }
+
+        .checkout_products .seller_group {
+            width: 100%;
+            background-color: #f0f0f0;
+            padding: 8px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .checkout_products .product_item {
+            width: 100%;
+            height: 100px;
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+            align-items: center;
+        }
+
+        .checkout_products .product_item img {
+            max-width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .checkout_products .product_info {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .checkout_products .product_info p {
+            margin: 3px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Total price section */
+        .total_price {
             font-size: 16px;
             font-weight: bold;
-            color: #5a9;
+            text-align: right;
+            margin-top: 20px;
+            color: orange
         }
 
-        .infor_payment {
-            width: 40%;
-            padding: 20px;
-            background-color: #fafafa;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .infor_payment .title {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 15px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .button_payment {
-            width: 70%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .button_payment input {
-            width: 100px;
-            height: 30px;
+        /* Button styles */
+        button.btn_confirm_payment {
+            background-color: orange;
+            color: white;
+            padding: 12px;
+            border: none;
             border-radius: 5px;
-            background-color: white;
-            border: 1px solid green;
-            color: green;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        button.btn_confirm_payment:hover {
+            background-color: orangered;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .main_content {
+                padding: 15px;
+            }
+
+            .payment_info input,
+            .payment_info select {
+                font-size: 14px;
+            }
+
+            .checkout_products .product_item {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .checkout_products .product_item img {
+                max-width: 100px;
+            }
+
+            img {
+                width: 100px;
+                height: 120px;
+                object-fit: cover;
+                border-radius: 5px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <?php include 'header.php' ?>
+    <?php include 'header.php'; ?>
 
-    <form method="POST" class="main_content">
-        <div class="content">
-            <div class="infor_myself">
-                <div class="title">
-                    Thông tin cá nhân
-                </div>
-
-                <div class="infor_row">
-                    <label for="name">Họ và tên</label>
-                    <input type="text" name="full_name" placeholder="Họ và tên" required>
-                </div>
-
-                <div class="infor_row">
-                    <label for="phone_number">Số điện thoại</label>
-                    <input type="phone" name="phone_number" placeholder="Số điện thoại" required>
-                </div>
-                <div class="infor_row">
-                    <label for="address">Địa chỉ cụ thể (tên đường, số nhà)</label>
-                    <input type="text" name="address" placeholder="Vui lòng nhập địa chỉ của bạn" required>
-                </div>
-
-                <div class="infor_row">
-                    <label for="city">Tỉnh / Thành phố</label>
-                    <input type="text" name="city" placeholder="Vui lòng nhập tỉnh / thành phố" required>
-                </div>
-
-                <div class="infor_row">
-                    <label for="district">Quận / huyện</label>
-                    <input type="text" name="district" placeholder="Vui lòng nhập quận / huyện" required>
-                </div>
-
-                <div class="infor_row">
-                    <label for="ward">Phường / xã</label>
-                    <input type="text" name="ward" placeholder="Vui lòng nhập phường / xã">
-                </div>
+    <div class="main_content">
+        <h3>Xác nhận đặt hàng</h3>
+        <form method="post">
+            <div class="payment_info">
+                <!-- Form fields for payment info -->
+                <label for="fullname">Họ và tên:</label>
+                <input type="text" name="fullname" id="fullname" required>
+                <label for="phone">Số điện thoại:</label>
+                <input type="text" name="phone" id="phone" required>
+                <label for="address">Địa chỉ:</label>
+                <input type="text" name="address" id="address" required>
+                <label for="city">Tỉnh / thành phố:</label>
+                <input type="text" name="city" id="city" required>
+                <label for="district">Quận / huyện:</label>
+                <input type="text" name="district" id="district" required>
+                <label for="ward">Phường / xã:</label>
+                <input type="text" name="ward" id="ward" required>
+                <label for="payment_method">Phương thức thanh toán:</label>
+                <select name="payment_method" id="payment_method" required>
+                    <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                    <option value="bank">Chuyển khoản ngân hàng</option>
+                </select>
             </div>
 
-            <div class="infor_payment">
-                <div class="infor_detail_payment">
-                    <div class="title" style="font-size: 15px">
-                        Chọn phương thức thanh toán
-                    </div>
-                    <div class="method_payment">
-                        <input type="radio" id="cod" name="payment_method" value="cod" required>
-                        <div class="method_avt">
-                            <img src="./img/cash.png" alt="">
-                        </div>
-                        <div class="method_name">
-                            <span>Thanh toán khi nhận hàng</span>
-                        </div>
-                    </div>
+            <div class="checkout_products">
+                <?php
+                // Lấy tất cả sản phẩm đã chọn trong giỏ hàng
+                $sql = "SELECT cart.product_id, cart.quantity, products.product_name, products.price, products.product_image, products.seller_id, users.user_name
+                        FROM cart 
+                        JOIN products ON cart.product_id = products.product_id 
+                        JOIN users ON products.seller_id = users.user_id
+                        WHERE cart.user_id = '$user_id' AND cart.selected = 1";
+                $query = mysqli_query($conn, $sql);
 
-                    <div class="method_payment">
-                        <input type="radio" id="card" name="payment_method" value="card"
-                            onclick="toggleCardPaymentDetails(true)">
-                        <div class="method_avt" style="color: blue;">
-                            <img src="./img/momo.jpg" alt="">
-                        </div>
-                        <div class="method_name">
-                            <span>Ví điện tử Momo</span>
-                        </div>
-                    </div>
+                $total_price = 0;
+                $current_seller = null;
 
-                </div>
-            </div>
-        </div>
-
-        <div class="order_detail">
-            <table class="cart-table">
-                <thead>
-                    <tr>
-                        <th>Tên sản phẩm</th>
-                        <th>Số lượng</th>
-                        <th>Giá</th>
-                        <th>Tổng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    // Hiển thị giỏ hàng
+                if (mysqli_num_rows($query) > 0) {
                     while ($row = mysqli_fetch_array($query)) {
-                        $subtotal = $row['quantity'] * $row['price'];
-                        $total += $subtotal;
-                        echo "<tr>
-                                <td>{$row['product_name']}</td>
-                                <td>{$row['quantity']}</td>
-                                <td>" . number_format($row['price'], 0, ',', '.') . " đ</td>
-                                <td>" . number_format($subtotal, 0, ',', '.') . " đ</td>
-                                </tr>";
+                        if ($current_seller !== $row['seller_id']) {
+                            if ($current_seller !== null) {
+                                echo "<div class='total_price'><b>Tổng cộng: " . number_format($total_price) . " đ</b></div>";
+                            }
+                            $current_seller = $row['seller_id'];
+                            echo "<div class='seller_group'><h5>Shop: {$row['user_name']}</h5></div>";
+                            $total_price = 0;
+                        }
+
+                        echo "<div class='product_item'>";
+                        echo "<img src='./upload_image/{$row['product_image']}' alt='{$row['product_name']}'>";
+                        echo "<div class='product_info'>";
+                        echo "<p>{$row['product_name']}</p>";
+                        echo "<p>Số lượng: {$row['quantity']}</p>";
+                        echo "<p>Giá: " . number_format($row['price']) . " đ</p>";
+                        echo "</div>";
+                        echo "</div>";
+
+                        $total_price += $row['quantity'] * $row['price'];
                     }
-                    ?>
-                    <tr class="total-row">
-                        <td colspan="3" align="right">Tổng cộng:</td>
-                        <td><b><?php echo number_format($total, 0, ',', '.'); ?> đ</b></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
 
-        <div class="button_payment">
-            <input class="btn_addtocart" type="submit" name="submit" data-toggle="modal" value="Thanh toán">
-        </div>
-    </form>
+                    echo "<div class='total_price'><b>Tổng cộng: " . number_format($total_price) . " đ</b></div>";
+                } else {
+                    echo "<p>Không có sản phẩm nào để thanh toán!</p>";
+                }
+                ?>
+            </div>
 
-    <script>
-        function toggleCardPaymentDetails(show) {
-            var cardDetails = document.getElementById('card-details');
-            if (show) {
-                cardDetails.classList.add('active');
-            } else {
-                cardDetails.classList.remove('active');
-            }
-        }
-    </script>
-    <?php include 'footer.php' ?>
+            <button type="submit" name="submit" class="btn btn_confirm_payment">Xác nhận thanh toán</button>
+        </form>
+    </div>
 </body>
 
 </html>

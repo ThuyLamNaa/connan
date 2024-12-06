@@ -185,3 +185,6 @@ body {
     justify-content: center;
     flex-direction: column;
 }
+html {
+    font-family: Arial, Helvetica, sans-serif; 
+ }

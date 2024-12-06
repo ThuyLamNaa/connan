@@ -66,6 +66,17 @@ if (isset($_GET['delete'])) {
     }
 }
 
+// Hiển thị các đánh giá của người dùng
+if (isset($_GET['id'])) {
+    $product_id = $_GET['id'];
+
+    // Lấy các đánh giá liên quan đến sản phẩm
+    $sql_reviews = "SELECT r.*, u.user_name FROM rating r 
+                    JOIN users u ON r.user_id = u.user_id 
+                    WHERE r.product_id = $product_id";
+    $result_reviews = mysqli_query($conn, $sql_reviews);
+}
+
 ?>
 <html>
 
@@ -116,7 +127,8 @@ if (isset($_GET['delete'])) {
 
                 <div class="create_time">
                     <i class="fa-solid fa-clock" style="color: gray;"></i>
-                    <span style="font-size: 15px; color: gray">Cập nhật vào: <?php echo $fetch_product['created_time'] ?></span>
+                    <span style="font-size: 15px; color: gray">Cập nhật vào:
+                        <?php echo $fetch_product['created_time'] ?></span>
                 </div>
 
 
@@ -148,8 +160,8 @@ if (isset($_GET['delete'])) {
                     <button class="btn_addtocart" type="submit" name="add_cart" data-toggle="modal"
                         ata-target="#dialog1">
                         <a href="detail_myproduct.php?delete=<?php echo $fetch_product['product_id'] ?>"
-                            onclick="return confirm('Bạn muốn xóa sản phẩm này?')"> <i
-                                class="fa-solid fa-trash"></i> Xóa sản phẩm
+                            onclick="return confirm('Bạn muốn xóa sản phẩm này?')"> <i class="fa-solid fa-trash"></i>
+                            Xóa sản phẩm
                         </a> </button>
 
                     <button class="btn_buy" type="submit" name="btn_buy">
@@ -202,6 +214,45 @@ if (isset($_GET['delete'])) {
                 </table>
             </div>
         </div>
+
+
+
+        <div class="product_reviews" style="width: 80%">
+    <h3 style="color: orange; text-align: center">Đánh giá từ người dùng</h3>
+
+    <?php
+    if (mysqli_num_rows($result_reviews) > 0) {
+        while ($review = mysqli_fetch_assoc($result_reviews)) {
+            ?>
+            <div class="review_item">
+                <div class="review_header">
+                    <strong><?php echo htmlspecialchars($review['user_name']); ?></strong>
+                    <span class="review_date"> - <?php echo date('d/m/Y', strtotime($review['created_time'])); ?></span>
+                </div>
+                <div class="review_rating">
+                    <?php
+                    // Hiển thị đánh giá sao
+                    for ($i = 1; $i <= 5; $i++) {
+                        if ($i <= $review['number_rating']) {
+                            echo '<i class="fa-solid fa-star" style="color: gold;"></i>';
+                        } else {
+                            echo '<i class="fa-regular fa-star" style="color: gray;"></i>';
+                        }
+                    }
+                    ?>
+                </div>
+                <p class="review_content">
+                    <?php echo htmlspecialchars($review['comment']); ?>
+                </p>
+            </div>
+            <hr>
+            <?php
+        }
+    } else {
+        echo "<p>Chưa có đánh giá nào cho sản phẩm này!</p>";
+    }
+    ?>
+</div>
 
     </div>
 

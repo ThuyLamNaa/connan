@@ -2,7 +2,7 @@
 include './config.php';
 session_start();
 error_reporting(E_ALL & ~E_NOTICE);
-$user_id = @$_SESSION['user_id'];
+$user_id = @$_SESSION['user_id']; // Lấy ID người dùng hiện tại
 
 // Xác định số sản phẩm mỗi trang
 $products_per_page = 12;
@@ -11,6 +11,7 @@ $products_per_page = 12;
 $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 $start_from = ($page - 1) * $products_per_page;
 
+// Truy vấn lấy tất cả thông báo (không thay đổi)
 $sql = "SELECT * FROM notifications ORDER BY created_time DESC";
 $result = $conn->query($sql);
 
@@ -140,26 +141,25 @@ if ($result->num_rows > 0) {
                 $keyword = isset($_GET['keyword']) ? mysqli_real_escape_string($conn, $_GET['keyword']) : '';
 
                 // Xác định thứ tự sắp xếp
+                $sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'new';  // Mặc định là 'new' nếu không có giá trị
                 $order_by = "p.created_time DESC"; // Mặc định sắp xếp theo mới nhất
-                if (isset($_GET['sort_by'])) {
-                    switch ($_GET['sort_by']) {
-                        case 'new':
-                            $order_by = "p.created_time DESC"; // Mặc định sắp xếp theo mới nhất
-                            break;
-                        case 'price_asc':
-                            $order_by = "p.price ASC"; // Sắp xếp giá từ thấp đến cao
-                            break;
-                        case 'price_desc':
-                            $order_by = "p.price DESC"; // Sắp xếp giá từ cao đến thấp
-                            break;
-                    }
+                switch ($sort_by) {
+                    case 'new':
+                        $order_by = "p.created_time DESC"; // Mặc định sắp xếp theo mới nhất
+                        break;
+                    case 'price_asc':
+                        $order_by = "p.price ASC"; // Sắp xếp giá từ thấp đến cao
+                        break;
+                    case 'price_desc':
+                        $order_by = "p.price DESC"; // Sắp xếp giá từ cao đến thấp
+                        break;
                 }
 
                 // Truy vấn tất cả các sản phẩm từ productapproval có status là 'Accept' và quantity > 0
                 $query = "SELECT p.* FROM productapproval pa
                 JOIN products p ON pa.product_id = p.product_id
-                WHERE pa.status = 'Accept' AND p.quantity > 0"; // Thêm điều kiện p.quantity > 0
-                
+                WHERE pa.status = 'Accept' AND p.quantity > 0 AND p.seller_id != '$user_id'"; // Điều kiện ẩn các sản phẩm của người dùng hiện tại
+
                 // Nếu có lọc theo danh mục, thêm điều kiện vào truy vấn
                 if (!empty($category_id)) {
                     $query .= " AND p.category_id = '$category_id'";
@@ -200,7 +200,7 @@ if ($result->num_rows > 0) {
                 // Lấy tổng số sản phẩm để tính số trang
                 $total_query = "SELECT COUNT(*) AS total FROM productapproval pa
                 JOIN products p ON pa.product_id = p.product_id
-                WHERE pa.status = 'Accept' AND p.quantity > 0";
+                WHERE pa.status = 'Accept' AND p.quantity > 0 AND p.seller_id != '$user_id'"; // Điều kiện ẩn sản phẩm của người dùng hiện tại
 
                 if (!empty($category_id)) {
                     $total_query .= " AND p.category_id = '$category_id'";
@@ -220,23 +220,26 @@ if ($result->num_rows > 0) {
 
             <!-- Phân trang -->
             <div class="pagination">
-                <?php
-                // Liên kết "Previous" (Trang trước)
-                if ($page > 1) {
-                    echo '<a href="?page=' . ($page - 1) . '&category_id=' . $category_id . '&keyword=' . $keyword . '&sort_by=' . (isset($_GET['sort_by']) ? $_GET['sort_by'] : 'new') . '">Trang đầu</a>';
-                }
+            <?php
+            // Lấy giá trị của 'sort_by' nếu có, nếu không thì mặc định là 'new'
+            $sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'new';
+            
+            // Liên kết "Previous" (Trang trước)
+            if ($page > 1) {
+                echo '<a href="?page=' . ($page - 1) . '&category_id=' . $category_id . '&keyword=' . $keyword . '&sort_by=' . $sort_by . '" class="previous">Previous</a>';
+            }
 
-                // Liên kết các trang
-                for ($i = 1; $i <= $total_pages; $i++) {
-                    echo '<a href="?page=' . $i . '&category_id=' . $category_id . '&keyword=' . $keyword . '&sort_by=' . (isset($_GET['sort_by']) ? $_GET['sort_by'] : 'new') . '">' . $i . '</a>';
-                }
+            // Liên kết các trang số
+            for ($i = 1; $i <= $total_pages; $i++) {
+                echo '<a href="?page=' . $i . '&category_id=' . $category_id . '&keyword=' . $keyword . '&sort_by=' . $sort_by . '" class="' . ($page == $i ? 'active' : '') . '">' . $i . '</a>';
+            }
 
-                // Liên kết "Next" (Trang sau)
-                if ($page < $total_pages) {
-                    echo '<a href="?page=' . ($page + 1) . '&category_id=' . $category_id . '&keyword=' . $keyword . '&sort_by=' . (isset($_GET['sort_by']) ? $_GET['sort_by'] : 'new') . '">Trang tiếp theo</a>';
-                }
-                ?>
-            </div>
+            // Liên kết "Next" (Trang sau)
+            if ($page < $total_pages) {
+                echo '<a href="?page=' . ($page + 1) . '&category_id=' . $category_id . '&keyword=' . $keyword . '&sort_by=' . $sort_by . '" class="next">Next</a>';
+            }
+            ?>
+        </div>
 
 
         </div>

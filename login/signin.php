@@ -12,6 +12,7 @@ if (isset($_POST['submit'])) {
     $user_name = trim(mysqli_real_escape_string($conn, $_POST['user_name']));
     $email = trim(mysqli_real_escape_string($conn, $_POST['email']));
     $password = trim(mysqli_real_escape_string($conn, $_POST['password']));
+    $created_time = date('Y-m-d H:i:s');
 
     // Kiểm tra tên đăng nhập
     if (empty($user_name)) {
@@ -42,7 +43,7 @@ if (isset($_POST['submit'])) {
         } else {
             // Thực hiện thêm người dùng
             $create_time = date('Y-m-d H:i:s');
-            mysqli_query($conn, "INSERT INTO users (user_name, password, email, role_id,created_time) VALUES ('$user_name', '$password_hashed', '$email', '3', '$created_time')") or die('query fail');
+            mysqli_query($conn, "INSERT INTO users (user_name, password, email, role_id, created_time) VALUES ('$user_name', '$password_hashed', '$email', '3', '$created_time')") or die('query fail');
             echo "<script>alert('Đăng ký tài khoản thành công'); window.location.href='./login.php';</script>";
 
             // Gửi email thông báo đăng ký thành công

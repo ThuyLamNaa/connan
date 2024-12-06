@@ -1,0 +1,21 @@
+.content {
+    min-height: 450px;
+    width: 100%;
+}
+
+.statistical_order {
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+.order_sold h4 {
+    color: orangered;
+}
+.order_sold {
+    width: 50%;
+}
+html {
+    font-family: Arial, Helvetica, sans-serif; 
+ }

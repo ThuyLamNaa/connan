@@ -93,6 +93,41 @@ if (isset($_POST['buy_product'])) {
     exit; // Dừng mã sau khi chuyển hướng
 }
 
+
+// Xử lý lưu đánh giá
+if (isset($_POST['submit_rating'])) {
+    if ($user_id == null) {
+        header('Location: ./login/login.php');
+        exit;
+    }
+
+    $rating = $_POST['rating'];
+    $review = mysqli_real_escape_string($conn, $_POST['review']);
+    $created_time = date('Y-m-d H:i:s');
+ 
+
+    // Kiểm tra xem người dùng đã đánh giá sản phẩm này chưa
+    $check_query = "SELECT * FROM rating WHERE user_id = '$user_id' AND product_id = '$product_id'";
+    $check_result = mysqli_query($conn, $check_query);
+
+    if (mysqli_num_rows($check_result) > 0) {
+        // Cập nhật đánh giá nếu đã tồn tại
+        $update_query = "UPDATE rating SET number_rating = '$rating', comment = '$review', created_time = '$created_time' WHERE user_id = '$user_id' AND product_id = '$product_id'";
+        mysqli_query($conn, $update_query);
+    } else {
+        // Thêm mới đánh giá
+        $insert_query = "INSERT INTO rating (user_id, created_time, product_id, number_rating, comment) VALUES ('$user_id', '$created_time', '$product_id', '$rating', '$review')";
+        mysqli_query($conn, $insert_query);
+    }
+
+    header("Location: product.php?id=$product_id&notification=Gửi đánh giá thành công");
+    exit;
+}
+
+// Lấy các đánh giá hiện có của sản phẩm
+$reviews_query = "SELECT r.*, u.user_name FROM rating r JOIN users u ON r.user_id = u.user_id WHERE product_id = '$product_id'";
+$reviews_result = mysqli_query($conn, $reviews_query);
+
 ?>
 <html>
 
@@ -250,9 +285,51 @@ if (isset($_POST['buy_product'])) {
         <?php endif; ?>
     </form>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="product-reviews">
+        <h2>Đánh giá sản phẩm</h2>
+
+        <!-- Form đánh giá -->
+        <?php if ($user_id): ?>
+            <form method="POST">
+                <label for="rating">Đánh giá sao:</label>
+                <select name="rating" id="rating" required>
+                    <option value="1">1 sao</option>
+                    <option value="2">2 sao</option>
+                    <option value="3">3 sao</option>
+                    <option value="4">4 sao</option>
+                    <option value="5">5 sao</option>
+                </select>
+
+                <label for="review">Nhận xét:</label>
+                <textarea name="review" id="review" rows="4" placeholder="Nhập nhận xét của bạn" required></textarea>
+
+                <button type="submit" name="submit_rating">Gửi đánh giá</button>
+            </form>
+        <?php else: ?>
+            <p><a href="./login/login.php">Đăng nhập</a> để gửi đánh giá.</p>
+        <?php endif; ?>
+
+        <!-- Hiển thị danh sách đánh giá -->
+        <div class="reviews-list">
+            <?php while ($review = mysqli_fetch_assoc($reviews_result)): ?>
+                <div class="review-item">
+                    <h4>
+                      <span style="color: black">  <?php echo $review['user_name']; ?> </span>
+                        <span class="stars">
+                            <?php for ($i = 0; $i < $review['number_rating']; $i++): ?>
+                                <i class="fa-solid fa-star" style="color: #FFD43B;"></i>
+                            <?php endfor; ?>
+                        </span>
+                    </h4>
+                    <p><?php echo $review['comment']; ?></p>
+                </div>
+            <?php endwhile; ?>
+        </div>
+
+    </div>
+
     <?php include 'footer.php' ?>
+
 </body>
 
 

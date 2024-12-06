@@ -123,6 +123,26 @@ $user_name = $_SESSION['user_name'];
         .tabs .active {
             background-color: orange;
         }
+        .statistical {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .statistical_revenue {
+            width: 150px;
+            height: 30px;
+            border: none;
+            background-color: orange;
+            border-radius: 5px;
+        }
+        .statistical_revenue a {
+            text-decoration: none;
+            color: black;
+        }
+        .statistical_revenue:hover {
+            background-color: orangered;
+        }
     </style>
 </head>
 
@@ -162,6 +182,15 @@ $user_name = $_SESSION['user_name'];
                 <span><span style="font-size: 15px">Sản phẩm đã bán:
                     </span><?php echo $total_product_bought['total_sold'] ?></span>
                 <span><span style="font-size: 15px">Địa chỉ: </span><?php echo $fetch_user['address'] ?></span>
+
+                <!-- <div class="statistical">
+                    <button class="statistical_revenue">
+                        <a href="statistical.php?user_id_id=' . $fetch_user['user_id'] . '">
+                            Thống kê doanh thu
+                        </a>
+                    </button>
+                </div> -->
+
             </div>
 
             <div class="all_product">

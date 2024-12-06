@@ -188,3 +188,6 @@ main .btn-submit {
 main .btn-submit:hover {
     background-color: #339900;
 }
+html {
+    font-family: Arial, Helvetica, sans-serif; 
+ }

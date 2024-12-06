@@ -15,7 +15,34 @@ if (isset($_GET['u_id'])) {
     $products_result = mysqli_query($conn, $product_sql);
 }
 
+// Phân trang
+$limit = 6; // Số sản phẩm trên mỗi trang
+$page = isset($_GET['page']) ? $_GET['page'] : 1; // Trang hiện tại
+$start_from = ($page - 1) * $limit;
+
+// Truy vấn để lấy sản phẩm đã duyệt với phân trang
+$query = "SELECT p.* 
+          FROM productapproval pa 
+          JOIN products p ON pa.product_id = p.product_id 
+          WHERE pa.status = 'Accept' 
+          AND p.seller_id = $seller_id 
+          AND p.quantity > 0 
+          LIMIT $start_from, $limit";
+
+$select_all_product = mysqli_query($conn, $query) or die('Query Failed');
+
+// Tính tổng số sản phẩm để tính số trang
+$count_query = "SELECT COUNT(*) FROM productapproval pa 
+                JOIN products p ON pa.product_id = p.product_id 
+                WHERE pa.status = 'Accept' 
+                AND p.seller_id = $seller_id 
+                AND p.quantity > 0";
+$count_result = mysqli_query($conn, $count_query);
+$total_products = mysqli_fetch_row($count_result)[0];
+$total_pages = ceil($total_products / $limit);
+
 ?>
+
 <html>
 
 <head>
@@ -28,7 +55,6 @@ if (isset($_GET['u_id'])) {
     <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/css/all.min.css">
     <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/css/brands.min.css">
     <link rel="stylesheet" href="./icon/fontawesome-free-6.6.0-web/css/fontawesome.min.css">
-
 </head>
 
 <body>
@@ -69,16 +95,11 @@ if (isset($_GET['u_id'])) {
                 <span><span style="font-size: 15px">Sản phẩm đã bán:
                     </span><?php echo $total_product_bought['total_sold'] ?></span>
                 <span><span style="font-size: 15px">Địa chỉ: </span><?php echo $fetch_user['address'] ?></span>
-
             </div>
 
             <div class="all_product">
                 <div class="product_sale">
                     <?php
-                    // Truy vấn tất cả các sản phẩm đã duyệt
-                    $query = "SELECT p.* FROM productapproval pa JOIN products p ON pa.product_id = p.product_id WHERE pa.status = 'Accept' AND p.seller_id = $seller_id AND p.quantity > 0";
-                    $select_all_product = mysqli_query($conn, $query) or die('Query Failed');
-
                     if (mysqli_num_rows($select_all_product) > 0) {
                         while ($product = mysqli_fetch_assoc($select_all_product)) {
                             ?>
@@ -105,7 +126,22 @@ if (isset($_GET['u_id'])) {
             </div>
         </div>
     </div>
+    <!-- Phân trang -->
+    <div class="pagination" style="text-align: center">
+        <?php if ($page > 1) { ?>
+            <a href="?u_id=<?php echo $seller_id; ?>&page=<?php echo $page - 1; ?>">Trang trước</a>
+        <?php } ?>
+        <?php for ($i = 1; $i <= $total_pages; $i++) { ?>
+            <a href="?u_id=<?php echo $seller_id; ?>&page=<?php echo $i; ?>" <?php if ($i == $page)
+                      echo 'class="active"'; ?>><?php echo $i; ?></a>
+        <?php } ?>
+        <?php if ($page < $total_pages) { ?>
+            <a href="?u_id=<?php echo $seller_id; ?>&page=<?php echo $page + 1; ?>">Trang sau</a>
+        <?php } ?>
+    </div>
 
     <?php include 'footer.php' ?>
+
 </body>
+
 </html>

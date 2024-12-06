@@ -1,3 +1,7 @@
+html {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
 .form_information {
     width: 100%;
     padding: 10px;
@@ -11,9 +15,11 @@
     flex-direction: column;
     margin: 5px 0;
 }
+
 .form_group label {
     width: 100%;
 }
+
 .form_group input {
     width: 100%;
     margin-top: 10px;
@@ -22,6 +28,7 @@
     border: 1px solid orange;
     padding: 10px;
 }
+
 .button_create {
     width: 100%;
     display: flex;
@@ -29,6 +36,7 @@
     align-items: center;
     margin-top: 10px;
 }
+
 .button_create input {
     width: 100px;
     height: 35px;
